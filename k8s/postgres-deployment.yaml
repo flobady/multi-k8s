@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: postgres
+  template:
+    metadata:
+      labels:
+        component: postgres
+    spec:
+      volumes: # a la création du pod par ce déploiement, kubernetes doit requester du long term persistent storage via le PVC. kubernetes va donc provisionner du hard drive
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: database-persistent-volume-claim
+      containers:
+        - name: postgres
+          image: postgres
+          ports:
+            - containerPort: 5432
+          volumeMounts: # on a accés au storage et voici comment je veux y accéder dans mon container
+            - name: postgres-storage # identique à ce qu'on a mis dans volumes ligne 15
+              mountPath: /var/lib/postgresql/data # désigne ou dans le container ce storage doit etre dispo, ce répertoire est le répertoire par défaut
+              subPath: postgres # nom du folder dans lequel sont storées les data dans le persistent volume
+          env:
+            - name: PGPASSWORD # on override le user et password par défaut qui nous vient de l'image postgres
+              valueFrom:
+                secretKeyRef:
+                  name: pgpassword
+                  key: PGPASSWORD
+

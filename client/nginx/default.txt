@@ -1,0 +1,9 @@
+server {
+  listen 3000; // nginx listen le port 3000 pour servir l'app react
+
+  location / {
+    root /usr/share/nginx/html; // on y met tous nos production assets
+    index index.html index.htm;
+    try_files $uri $uri/ /index.html; // pour rque react router fonctionne
+  }
+}

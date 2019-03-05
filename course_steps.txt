@@ -1,0 +1,2 @@
+kubectl apply -f k8s
+kubectl get pods vérifier que ça tourne bien
