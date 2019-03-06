@@ -14,7 +14,7 @@ before_install:
   - gcloud config set project solar-haven-194008 # on dit à gcloud quel projet on veut travailler
   - gcloud config set compute/zone asia-south1-a # vient de l'onglet cluster dans google platform
   - gcloud container clusters get-credentials multi-cluster # on travaille sur multi-cluster
-  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   - docker build -t flobady/react-test -f ./client/Dockerfile.dev ./client # pour les tests il nous faut Dockerfile.dev
 
 script:
