@@ -1,9 +1,27 @@
 sudo: required
 services:
   - docker # on a besoin de docker dans ce travis file
+env:
+  global:
+    - SHA=$(git rev-parse HEAD) # on assigne à la variable d'environnemnt SHA le commit SHA dans Travis. objectif: quaond on pousse du code le SHA change, et donc ça replubliera le projet
+    - CLOUDSDK_CORE_DISABLE_PROMPTS=1 # pour éviter que gcloud CLI commence à demander des prompts (des inputs) qui bloquerait le process
 before_install:
   - openssl aes-256-cbc -K $encrypted_0c35eebf403c_key -iv $encrypted_0c35eebf403c_iv -in service-account.json.enc -out service-account.json -d
   - curl https://sdk.cloud.google.com | bash > /dev/null; # download | install google cloud SDK (cf doc online)
   - source $HOME/google-cloud-sdk/path.bash.inc # crée un fichier de config (mécanique interne de l'install de google cloud CLI)
   - gcloud components update kubectl # on aura besoin de kubectl pour interagir avec notre cluster
-  - gcloud auth activate-service-account --key-file service-account.json # on crée le user qui va accéder à notre google cloud account
+  - gcloud auth activate-service-account --key-file service-account.json # on crée le user qui va accéder à notre google cloud account avec le service accoutn encrypté
+  - gcloud config set project solar-haven-194008 # on dit à gcloud quel projet on veut travailler
+  - gcloud config set compute/zone asia-south1-a # vient de l'onglet cluster dans google platform
+  - gcloud container clusters get-credentials multi-cluster # on travaille sur multi-cluster
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker build -t flobady/react-test -f ./client/Dockerfile.dev ./client # pour les tests il nous faut Dockerfile.dev
+
+script:
+  - docker run flobady/react-test npm test -- --coverage
+
+deploy:
+  provider: script # on fait tourner un script custom
+  script: bash ./deploy.sh
+  on:
+    branch: master

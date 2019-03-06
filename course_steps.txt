@@ -17,3 +17,23 @@ Dans le container Ruby, on install travis avec gem qui est le npm ruby: gem inst
   on encrypte le fichier: travis encrypt-file service-account.json -r flobady/multi-k8s
   la précedente étape nous retourne le script de décriptage à mettre dans Travis: openssl aes-256-cbc -K $encrypted_0c35eebf403c_key -iv $encrypted_0c35eebf403c_iv -in service-account.json.enc -out service-account.json -d
   et on le lie à notre projet Travis CI
+7) on crée une variable d'environnemnt au niveau de la console de google cloud: kubectl create secret generic pgpassword --from-literal PGPASSWORD=12345asdf
+8) crée ingress: 2 possibilités:
+  i) dans la doc, choper la commande à faire tourner.
+  ii) utiliser Helm permet de gérer des third party software dans un cluster
+  en utilisant Helm, ça installe Helm (client) et Tiller (server)
+    Helm est une interface CLI qui prend les commandes et les passe au pods Tiller qui va agir et modifier le cluster => il faut donner des permissions à Tiller
+
+9) installer Helm en runnant le script (cf doc)
+  10) RBAC: controle qui accéde au cluster
+    - user account: identifie une personne, HUMAINE qui administrie le cluster
+    - service account: identifie un pod ou un programmme dans le cluster qui administrie le cluster
+    - ClusterRoleBinding: authorisz un account à faire des actions sur le cluster entièrement
+    - RoleBinding: authorize un account à agir dans un namespace
+  11) Création d'un service account pour Tiller: kubectl create serviceaccount --namespace kube-system tiller
+  12) Création d'un clusterRoleBinding: cf ligne d'après
+  13) assigner à Tiller un clusterRoleBinding: kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
+  14) lancer Helm: helm init --service-account tiller --upgrade
+      maintenant on peut installer des third party stuff avec helm comme ingress (cf doc): helm install stable/nginx-ingress --name my-nginx --set rbac.create=true
+
+la session 249 résume bien le flow
