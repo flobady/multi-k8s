@@ -1,2 +1,19 @@
 kubectl apply -f k8s
 kubectl get pods vérifier que ça tourne bien
+
+
+pour google prod:
+1) création du cluster sur GCP
+2) création d'un fichier travis
+3) création d'un service account sur GCP
+4) Télécharger le JSON (ultra confidentiel) qui contient les credentials depuis GCP (au moment de la création du service account)
+5) Linker ce JSON file à travis, pour ce faire il nous faut Travis CLI.
+Or Travis CLI pour etre installé a besoin de Ruby.
+Donc on se crée un container qui embarque Ruby et on va faire l'install de Traavis CLI dans ce container: docker run -it -v $(pwd):/app ruby:2.3 sh
+Dans le container Ruby, on install travis avec gem qui est le npm ruby: gem install travis
+6) dans la shell:
+  travis login pour se logger: travis login
+  copier le account service json file dans le volume directory pour y accéder depuis le container. on a juste à copier le json dans notre répertoire local puisque le répertoire local est linké en volume à notre container
+  on encrypte le fichier: travis encrypt-file service-account.json -r flobady/multi-k8s
+  la précedente étape nous retourne le script de décriptage à mettre dans Travis: openssl aes-256-cbc -K $encrypted_0c35eebf403c_key -iv $encrypted_0c35eebf403c_iv -in service-account.json.enc -out service-account.json -d
+  et on le lie à notre projet Travis CI

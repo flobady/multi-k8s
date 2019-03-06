@@ -1,0 +1,9 @@
+sudo: required
+services:
+  - docker # on a besoin de docker dans ce travis file
+before_install:
+  - openssl aes-256-cbc -K $encrypted_0c35eebf403c_key -iv $encrypted_0c35eebf403c_iv -in service-account.json.enc -out service-account.json -d
+  - curl https://sdk.cloud.google.com | bash > /dev/null; # download | install google cloud SDK (cf doc online)
+  - source $HOME/google-cloud-sdk/path.bash.inc # crée un fichier de config (mécanique interne de l'install de google cloud CLI)
+  - gcloud components update kubectl # on aura besoin de kubectl pour interagir avec notre cluster
+  - gcloud auth activate-service-account --key-file service-account.json # on crée le user qui va accéder à notre google cloud account
